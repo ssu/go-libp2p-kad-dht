@@ -68,12 +68,7 @@ func (q *dhtQuery) Run(ctx context.Context, peers []peer.ID) (*dhtQueryResult, e
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	default:
 	}
-
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	runner := newQueryRunner(q)
 	return runner.Run(ctx, peers)
 }
