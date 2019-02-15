@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"sync"
+	"log"
 	"time"
 
 	"github.com/libp2p/go-libp2p-core/helpers"
@@ -169,15 +169,15 @@ func (dht *IpfsDHT) sendRequest(ctx context.Context, p peer.ID, pmes *pb.Message
 		stats.Record(ctx, metrics.SentRequestErrors.M(1))
 		return nil, err
 	}
-
+	defer s.Reset()
+	dr := ggio.NewDelimitedReader(s, inet.MessageSizeMax)
+	bdw := newBufferedDelimitedWriter(s)
 	start := time.Now()
-
-	rpmes, err := ms.SendRequest(ctx, pmes)
+	err = bdw.WriteMsg(pmes)
 	if err != nil {
 		stats.Record(ctx, metrics.SentRequestErrors.M(1))
 		return nil, err
 	}
-
 	// update the peer (on valid msgs only)
 	dht.updateFromMessage(ctx, p, rpmes)
 
@@ -190,8 +190,11 @@ func (dht *IpfsDHT) sendRequest(ctx context.Context, p peer.ID, pmes *pb.Message
 		),
 	)
 	dht.peerstore.RecordLatency(p, time.Since(start))
-	logger.Event(ctx, "dhtReceivedMessage", dht.self, p, rpmes)
-	return rpmes, nil
+	return &reply, nil
+}
+
+func (dht *IpfsDHT) newStream(ctx context.Context, p peer.ID) (inet.Stream, error) {
+	return dht.host.NewStream(ctx, p, dht.protocols...)
 }
 
 // sendMessage sends out a message
