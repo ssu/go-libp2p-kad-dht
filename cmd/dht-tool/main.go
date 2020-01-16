@@ -11,17 +11,24 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/libp2p/go-libp2p"
+	"github.com/multiformats/go-multiaddr"
 	"github.com/peterh/liner"
 
-	multiaddr "github.com/multiformats/go-multiaddr"
+	ipfs_go_log "github.com/ipfs/go-log"
+
+	// multiaddr "github.com/multiformats/go-multiaddr"
 
 	host "github.com/libp2p/go-libp2p-host"
-	pstore "github.com/libp2p/go-libp2p-peerstore"
+	// pstore "github.com/libp2p/go-libp2p-peerstore"
+	pstore2 "github.com/libp2p/go-libp2p-core/peer"
 
-	"github.com/anacrolix/ipfslog"
+	// "github.com/anacrolix/ipfslog"
 
-	libp2p "github.com/libp2p/go-libp2p"
+	// libp2p "github.com/libp2p/go-libp2p"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
+
+	why_go_logging "github.com/whyrusleeping/go-logging"
 )
 
 func main() {
@@ -32,8 +39,10 @@ func main() {
 }
 
 func errMain() error {
-	ipfslog.SetAllLoggerLevels(ipfslog.Warning)
-	ipfslog.SetModuleLevel("dht", ipfslog.Info)
+	ipfs_go_log.SetAllLoggers(ipfs_go_log.LevelWarn)
+	why_go_logging.SetLevel(why_go_logging.INFO, "dht")
+	// ipfslog.SetAllLoggerLevels(ipfslog.Warning)
+	// ipfslog.SetModuleLevel("dht", ipfslog.Info)
 	log.SetFlags(log.Flags() | log.Llongfile)
 	host, err := libp2p.New(context.Background())
 	if err != nil {
@@ -149,7 +158,8 @@ func connectToBootstrapNodes(ctx context.Context, h host.Host, mas []multiaddr.M
 	for _, ma := range mas {
 		wg.Add(1)
 		go func(ma multiaddr.Multiaddr) {
-			pi, err := pstore.InfoFromP2pAddr(ma)
+			// pi, err := pstore.InfoFromP2pAddr(ma)
+			pi, err := pstore2.AddrInfoFromP2pAddr(ma)
 			if err != nil {
 				panic(err)
 			}
