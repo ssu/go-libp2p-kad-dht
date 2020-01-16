@@ -13,6 +13,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/helpers"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"golang.org/x/xerrors"
 
 	"github.com/libp2p/go-libp2p-kad-dht/metrics"
 	pb "github.com/libp2p/go-libp2p-kad-dht/pb"
@@ -172,7 +173,7 @@ func (dht *IpfsDHT) sendRequest(ctx context.Context, p peer.ID, pmes *pb.Message
 		return nil, err
 	}
 	defer s.Reset()
-	dr := ggio.NewDelimitedReader(s, inet.MessageSizeMax)
+	dr := ggio.NewDelimitedReader(s, network.MessageSizeMax)
 	bdw := newBufferedDelimitedWriter(s)
 	start := time.Now()
 	err = bdw.WriteMsg(pmes)
@@ -195,7 +196,7 @@ func (dht *IpfsDHT) sendRequest(ctx context.Context, p peer.ID, pmes *pb.Message
 	return &reply, nil
 }
 
-func (dht *IpfsDHT) newStream(ctx context.Context, p peer.ID) (inet.Stream, error) {
+func (dht *IpfsDHT) newStream(ctx context.Context, p peer.ID) (network.Stream, error) {
 	return dht.host.NewStream(ctx, p, dht.protocols...)
 }
 

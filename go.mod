@@ -14,6 +14,7 @@ require (
 	github.com/jbenet/goprocess v0.1.3
 	github.com/libp2p/go-libp2p v0.5.0
 	github.com/libp2p/go-libp2p-core v0.3.0
+	github.com/libp2p/go-libp2p-host v0.1.0
 	github.com/libp2p/go-libp2p-kbucket v0.2.3
 	github.com/libp2p/go-libp2p-peerstore v0.1.4
 	github.com/libp2p/go-libp2p-record v0.1.2
@@ -27,7 +28,9 @@ require (
 	github.com/multiformats/go-multiaddr-dns v0.2.0
 	github.com/multiformats/go-multihash v0.0.10
 	github.com/multiformats/go-multistream v0.1.0
+	github.com/peterh/liner v1.1.0
 	github.com/stretchr/testify v1.4.0
+	github.com/whyrusleeping/go-logging v0.0.1
 	go.opencensus.io v0.22.2
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
 )
