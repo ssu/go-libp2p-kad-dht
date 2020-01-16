@@ -13,7 +13,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/helpers"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"golang.org/x/xerrors"
 
 	"github.com/libp2p/go-libp2p-kad-dht/metrics"
 	pb "github.com/libp2p/go-libp2p-kad-dht/pb"
@@ -172,15 +171,15 @@ func (dht *IpfsDHT) sendRequest(ctx context.Context, p peer.ID, pmes *pb.Message
 		stats.Record(ctx, metrics.SentRequestErrors.M(1))
 		return nil, err
 	}
-	defer s.Reset()
-	dr := ggio.NewDelimitedReader(s, network.MessageSizeMax)
-	bdw := newBufferedDelimitedWriter(s)
+
 	start := time.Now()
-	err = bdw.WriteMsg(pmes)
+
+	rpmes, err := ms.SendRequest(ctx, pmes)
 	if err != nil {
 		stats.Record(ctx, metrics.SentRequestErrors.M(1))
 		return nil, err
 	}
+
 	// update the peer (on valid msgs only)
 	dht.updateFromMessage(ctx, p, rpmes)
 
@@ -193,7 +192,8 @@ func (dht *IpfsDHT) sendRequest(ctx context.Context, p peer.ID, pmes *pb.Message
 		),
 	)
 	dht.peerstore.RecordLatency(p, time.Since(start))
-	return &reply, nil
+	logger.Event(ctx, "dhtReceivedMessage", dht.self, p, rpmes)
+	return rpmes, nil
 }
 
 func (dht *IpfsDHT) newStream(ctx context.Context, p peer.ID) (network.Stream, error) {
