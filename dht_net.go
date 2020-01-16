@@ -5,7 +5,9 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
+	"sync"
+
+	// "log"
 	"time"
 
 	"github.com/libp2p/go-libp2p-core/helpers"
