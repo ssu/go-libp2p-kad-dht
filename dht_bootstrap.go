@@ -2,12 +2,15 @@ package dht
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	"time"
 
-	multierror "github.com/hashicorp/go-multierror"
+	"github.com/hashicorp/go-multierror"
+	u "github.com/ipfs/go-ipfs-util"
 	process "github.com/jbenet/goprocess"
 	processctx "github.com/jbenet/goprocess/context"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/routing"
 	"github.com/multiformats/go-multiaddr"
 	_ "github.com/multiformats/go-multiaddr-dns"
@@ -158,6 +161,13 @@ func (dht *IpfsDHT) refreshCpls(ctx context.Context) error {
 	return merr
 }
 
+func newRandomPeerId() peer.ID {
+	id := make([]byte, 32) // SHA256 is the default. TODO: Use a more canonical way to generate random IDs.
+	rand.Read(id)
+	id = u.Hash(id) // TODO: Feed this directly into the multihash instead of hashing it.
+	return peer.ID(id)
+}
+
 // Traverse the DHT toward the self ID
 func (dht *IpfsDHT) selfWalk(ctx context.Context) error {
 	queryCtx, cancel := context.WithTimeout(ctx, dht.rtRefreshQueryTimeout)
@@ -167,6 +177,18 @@ func (dht *IpfsDHT) selfWalk(ctx context.Context) error {
 		return nil
 	}
 	return fmt.Errorf("failed to query self during routing table refresh: %s", err)
+}
+
+// Traverse the DHT toward the random id
+func (dht *IpfsDHT) randomWalk(ctx context.Context) error {
+	id := newRandomPeerId()
+	queryCtx, cancel := context.WithTimeout(ctx, dht.rtRefreshQueryTimeout)
+	defer cancel()
+	_, err := dht.FindPeer(queryCtx, id)
+	if err == routing.ErrNotFound {
+		return nil
+	}
+	return fmt.Errorf("failed to query random id during routing table refresh: %s", err)
 }
 
 // Bootstrap tells the DHT to get into a bootstrapped state satisfying the
@@ -193,6 +215,5 @@ func (dht *IpfsDHT) BootstrapRandom(ctx context.Context) error {
 }
 
 func (dht *IpfsDHT) BootstrapSelf(ctx context.Context) error {
-	_, err := dht.walk(ctx, dht.self)
-	return err
+	return dht.selfWalk(ctx)
 }

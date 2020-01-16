@@ -39,7 +39,7 @@ func main() {
 }
 
 func errMain() error {
-	ipfs_go_log.SetAllLoggers(ipfs_go_log.LevelWarn)
+	ipfs_go_log.SetAllLoggers(why_go_logging.WARNING)
 	why_go_logging.SetLevel(why_go_logging.INFO, "dht")
 	// ipfslog.SetAllLoggerLevels(ipfslog.Warning)
 	// ipfslog.SetModuleLevel("dht", ipfslog.Info)
@@ -127,13 +127,13 @@ func handleInput(input string, d *dht.IpfsDHT, h host.Host) bool {
 		} else {
 			log.Printf("connected to %d/%d bootstrap nodes", numConnected, len(bootstrapNodeAddrs))
 		}
-	case bootstrapOnce:
-		cfg := dht.DefaultBootstrapConfig
-		//cfg.Timeout = time.Minute
-		err := d.BootstrapOnce(ctx, cfg)
-		if err != nil {
-			log.Printf("error bootstrapping: %v", err)
-		}
+	// case bootstrapOnce:
+		// cfg := dht.DefaultBootstrapConfig
+		// cfg.Timeout = time.Minute
+		// err := d.BootstrapOnce(ctx, cfg)
+		// if err != nil {
+		// 	log.Printf("error bootstrapping: %v", err)
+		// }
 	case bootstrapSelf:
 		log.Print(d.BootstrapSelf(ctx))
 	case bootstrapRandom:
@@ -143,9 +143,9 @@ func handleInput(input string, d *dht.IpfsDHT, h host.Host) bool {
 	case printRoutingTable:
 		d.RoutingTable().Print()
 	case printSelfId:
-		log.Printf("%s (%x)", d.PeerId().Pretty(), d.PeerKey())
+		log.Printf("%s (%x)", d.PeerID(), d.PeerKey())
 	case setClientMode:
-		d.SetClientMode()
+		// d.SetClientMode()
 	default:
 		log.Printf("unknown command: %q", input)
 		return false
